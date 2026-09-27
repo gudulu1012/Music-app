@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── User profile ───────────────────────────────────────
+    // A user can only read/write their own profile document.
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+      // ─── User sub-collections ─────────────────────────────
+      // Settings, favorites, history, playlists — all scoped to
+      // the owning user. No cross-user access.
+
+      match /settings/{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      match /favorites/{songId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      match /history/{historyId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      match /playlists/{playlistId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    // ─── Default deny ───────────────────────────────────────
+    // Everything not explicitly matched above is denied.
+    // This prevents accidental exposure of any other collections.
+  }
+}

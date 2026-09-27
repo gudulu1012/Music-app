@@ -1,0 +1,53 @@
+name: music_app
+description: A modern music streaming application built with Flutter.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^3.12.1
+  firebase_auth: ^5.5.4
+  cloud_firestore: ^5.6.5
+
+  # State Management
+  provider: ^6.1.2
+
+  # Routing
+  go_router: ^14.8.1
+
+  # Audio
+  just_audio: ^0.9.43
+  audio_service: ^0.18.17
+
+  # Local Storage
+  shared_preferences: ^2.3.4
+  path_provider: ^2.1.5
+
+  # UI
+  cached_network_image: ^3.4.1
+  flutter_svg: ^2.0.17
+  google_fonts: ^6.2.1
+
+  # Utilities
+  uuid: ^4.5.1
+  intl: ^0.19.0
+  connectivity_plus: ^6.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+

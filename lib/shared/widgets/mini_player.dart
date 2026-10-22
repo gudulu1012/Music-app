@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/audio/audio_manager.dart';
-import '../../app/theme/app_theme.dart';
+import '../../shared/theme/sonora_colors.dart';
 import '../../app/router.dart';
+import 'glass_container.dart';
 
 /// Persistent mini-player bar shown at the bottom of the app shell.
 ///
@@ -18,7 +19,8 @@ class MiniPlayer extends StatelessWidget {
     if (onTap != null) {
       onTap!();
     } else {
-      Navigator.of(context, rootNavigator: true).pushNamed(AppRouter.nowPlaying);
+      Navigator.of(context, rootNavigator: true)
+          .pushNamed(AppRouter.nowPlaying);
     }
   }
 
@@ -33,6 +35,7 @@ class MiniPlayer extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
+    final accent = theme.colorScheme.primary;
     final progressValue = audioManager.progress.clamp(0.0, 1.0);
 
     return Semantics(
@@ -41,113 +44,134 @@ class MiniPlayer extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => _handleTap(context),
-        child: Container(
-          height: 66,
-          decoration: BoxDecoration(
-            color: AppTheme.darkSurface,
-            border: Border(
-              top: BorderSide(
-                color: AppTheme.darkElevated.withAlpha(128),
-                width: 0.5,
-              ),
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Progress bar across the top of the mini-player
-              LinearProgressIndicator(
-                value: progressValue,
-                backgroundColor: AppTheme.darkElevated.withAlpha(80),
-                valueColor: const AlwaysStoppedAnimation(AppTheme.primaryPurple),
-                minHeight: 2.5,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      // Artwork with fallback
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          color: AppTheme.darkElevated,
-                          child: song.artworkUrl.isNotEmpty
-                              ? Image.network(
-                                  song.artworkUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(
-                                    Icons.music_note_rounded,
-                                    color: AppTheme.darkTextTertiary,
-                                    size: 22,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.music_note_rounded,
-                                  color: AppTheme.darkTextTertiary,
-                                  size: 22,
-                                ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Song info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              song.title,
-                              style: theme.textTheme.titleSmall,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              audioManager.playbackState == PlaybackState.error
-                                  ? 'Error playing track'
-                                  : song.artist,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: audioManager.playbackState == PlaybackState.error
-                                    ? const Color(0xFFEF4444)
-                                    : null,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Play/Pause/Loading/Error Control
-                      _buildPlaybackButton(audioManager),
-                      // Next Track Button
-                      IconButton(
-                        tooltip: 'Next track',
-                        onPressed: audioManager.hasNext ? audioManager.next : null,
-                        icon: Icon(
-                          Icons.skip_next_rounded,
-                          color: audioManager.hasNext
-                              ? Colors.white
-                              : AppTheme.darkTextTertiary,
-                          size: 26,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          child: GlassContainer(
+            height: 64,
+            borderRadius: BorderRadius.circular(16),
+            blur: 20,
+            backgroundColor: const Color(0xE515151A),
+            borderColor: Colors.white.withAlpha(24),
+            borderWidth: 1.0,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(90),
+                blurRadius: 18,
+                offset: const Offset(0, 4),
               ),
             ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LinearProgressIndicator(
+                  value: progressValue,
+                  backgroundColor: Colors.white.withAlpha(15),
+                  valueColor: AlwaysStoppedAnimation(accent),
+                  minHeight: 2,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        // Artwork with fallback
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            color: SonoraColors.surfaceElevated,
+                            child: song.artworkUrl.isNotEmpty
+                                ? Image.network(
+                                    song.artworkUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(
+                                      Icons.music_note_rounded,
+                                      color: SonoraColors.textTertiary,
+                                      size: 22,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.music_note_rounded,
+                                    color: SonoraColors.textTertiary,
+                                    size: 22,
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Song info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                song.title,
+                                style: theme.textTheme.titleSmall,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                audioManager.playbackState ==
+                                        PlaybackState.error
+                                    ? 'Error playing track'
+                                    : song.artist,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: audioManager.playbackState ==
+                                          PlaybackState.error
+                                      ? SonoraColors.error
+                                      : SonoraColors.textTertiary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Play/Pause/Loading/Error Control
+                        _buildPlaybackButton(audioManager, accent),
+                        // Next Track Button
+                        IconButton(
+                          tooltip: 'Next track',
+                          onPressed:
+                              audioManager.hasNext ? audioManager.next : null,
+                          icon: Icon(
+                            Icons.skip_next_rounded,
+                            color: audioManager.hasNext
+                                ? SonoraColors.textPrimary
+                                : SonoraColors.textTertiary,
+                            size: 26,
+                          ),
+                        ),
+                        // Queue button
+                        IconButton(
+                          tooltip: 'Queue',
+                          onPressed: () {
+                            Navigator.of(context, rootNavigator: true)
+                                .pushNamed(AppRouter.queue);
+                          },
+                          icon: const Icon(
+                            Icons.queue_music_rounded,
+                            color: SonoraColors.textSecondary,
+                            size: 22,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildPlaybackButton(AudioManager audioManager) {
+  Widget _buildPlaybackButton(AudioManager audioManager, Color accent) {
     if (audioManager.playbackState == PlaybackState.loading) {
-      return const SizedBox(
+      return SizedBox(
         width: 44,
         height: 44,
         child: Center(
@@ -156,7 +180,7 @@ class MiniPlayer extends StatelessWidget {
             height: 20,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryPurple),
+              valueColor: AlwaysStoppedAnimation<Color>(accent),
             ),
           ),
         ),
@@ -169,21 +193,30 @@ class MiniPlayer extends StatelessWidget {
         onPressed: audioManager.togglePlayPause,
         icon: const Icon(
           Icons.refresh_rounded,
-          color: Color(0xFFEF4444),
+          color: SonoraColors.error,
           size: 26,
         ),
       );
     }
 
-    return IconButton(
-      tooltip: audioManager.isPlaying ? 'Pause' : 'Play',
-      onPressed: audioManager.togglePlayPause,
-      icon: Icon(
-        audioManager.isPlaying
-            ? Icons.pause_rounded
-            : Icons.play_arrow_rounded,
-        color: Colors.white,
-        size: 30,
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: accent,
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        tooltip: audioManager.isPlaying ? 'Pause' : 'Play',
+        onPressed: audioManager.togglePlayPause,
+        padding: EdgeInsets.zero,
+        icon: Icon(
+          audioManager.isPlaying
+              ? Icons.pause_rounded
+              : Icons.play_arrow_rounded,
+          color: Colors.white,
+          size: 22,
+        ),
       ),
     );
   }

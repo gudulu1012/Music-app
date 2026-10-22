@@ -80,6 +80,16 @@ class AudioManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Play a song optionally setting the queue context.
+  Future<void> playSong(Song song, {List<Song>? queue}) async {
+    if (queue != null && queue.isNotEmpty) {
+      final index = queue.indexOf(song);
+      await playQueue(queue, startIndex: index >= 0 ? index : 0);
+    } else {
+      await play(song);
+    }
+  }
+
   /// Pause playback.
   void pause() {
     if (_playbackState == PlaybackState.playing) {

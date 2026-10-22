@@ -4,6 +4,8 @@ import '../../data/sample_data/sample_music_provider.dart';
 import '../../services/audio/audio_manager.dart';
 import '../../models/song.dart';
 import '../../shared/widgets/widgets.dart';
+import '../../shared/theme/sonora_colors.dart';
+import '../../core/responsive/responsive.dart';
 
 /// Search screen — find songs, albums, and artists.
 class SearchScreen extends StatefulWidget {
@@ -22,12 +24,12 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // Genre chips for quick discovery
   static const List<_GenreChip> _genres = [
-    _GenreChip('Electronic', Icons.electric_bolt_rounded, Color(0xFF8B5CF6)),
-    _GenreChip('Chillout', Icons.spa_rounded, Color(0xFF06B6D4)),
-    _GenreChip('Hip Hop', Icons.headphones_rounded, Color(0xFFEC4899)),
-    _GenreChip('Ambient', Icons.nights_stay_rounded, Color(0xFF10B981)),
-    _GenreChip('Dance', Icons.music_note_rounded, Color(0xFFF59E0B)),
-    _GenreChip('Acoustic', Icons.piano_rounded, Color(0xFFEF4444)),
+    _GenreChip('Pop', Icons.music_note_rounded, Color(0xFFEC4899)),
+    _GenreChip('Rock', Icons.electric_bolt_rounded, Color(0xFFEF4444)),
+    _GenreChip('Hip Hop', Icons.headphones_rounded, Color(0xFF8B5CF6)),
+    _GenreChip('R&B', Icons.graphic_eq_rounded, Color(0xFF3B82F6)),
+    _GenreChip('Lo-Fi', Icons.nights_stay_rounded, Color(0xFF10B981)),
+    _GenreChip('Indie', Icons.piano_rounded, Color(0xFFF59E0B)),
   ];
 
   @override
@@ -67,85 +69,140 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final audioManager = context.read<AudioManager>();
+    final isDesktop = Responsive.isDesktop(context);
+    final genreColumns =
+        Responsive.value(context, mobile: 2, tablet: 3, desktop: 3);
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // Search header
-          SliverAppBar(
-            floating: true,
-            title: Text('Search', style: theme.textTheme.headlineMedium),
-            toolbarHeight: 56,
-          ),
-
-          // Search bar
+          // Header & Frosted Glass Search Bar
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: TextField(
-                controller: _searchController,
-                focusNode: _focusNode,
-                onChanged: _performSearch,
-                decoration: InputDecoration(
-                  hintText: 'Songs, artists, albums...',
-                  prefixIcon: const Icon(Icons.search_rounded),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded),
-                          onPressed: () {
-                            _searchController.clear();
-                            _performSearch('');
-                            _focusNode.requestFocus();
-                          },
-                        )
-                      : null,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  isDesktop ? 32 : 16,
+                  isDesktop ? 28 : 16,
+                  isDesktop ? 32 : 16,
+                  0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Search',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Glassmorphic Search Input
+                    GlassContainer(
+                      borderRadius: BorderRadius.circular(16),
+                      blur: 16,
+                      borderColor: Colors.white.withAlpha(35),
+                      backgroundColor: Colors.white.withAlpha(12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 2),
+                      child: TextField(
+                        controller: _searchController,
+                        focusNode: _focusNode,
+                        onChanged: _performSearch,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: Colors.white,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Search songs, artists, genres...',
+                          hintStyle: TextStyle(
+                            color: Colors.white.withAlpha(120),
+                            fontSize: 14,
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 12),
+                          prefixIcon: Icon(
+                            Icons.search_rounded,
+                            color: Colors.white.withAlpha(160),
+                            size: 22,
+                          ),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.clear_rounded,
+                                    color: SonoraColors.textTertiary,
+                                    size: 18,
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _performSearch('');
+                                    _focusNode.requestFocus();
+                                  },
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
 
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
           // Content
           if (_isSearching)
             const SliverFillRemaining(
-              child: LoadingState(message: 'Searching...'),
+              child: LoadingState(message: 'Searching your vibe...'),
             )
           else if (_hasSearched && _results.isEmpty)
-            SliverFillRemaining(
+            const SliverFillRemaining(
               child: EmptyState(
                 icon: Icons.search_off_rounded,
                 title: 'No results found',
-                subtitle: 'Try a different search term',
+                subtitle: 'Try a different search term or explore genres',
               ),
             )
           else if (_hasSearched)
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final song = _results[index];
-                  return SongTile(
-                    song: song,
-                    isPlaying: audioManager.currentSong?.id == song.id,
-                    onTap: () =>
-                        audioManager.playQueue(_results, startIndex: index),
-                    onMorePressed: () {},
-                  );
-                },
-                childCount: _results.length,
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: isDesktop ? 32 : 16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final song = _results[index];
+                    return SongTile(
+                      song: song,
+                      isPlaying: audioManager.currentSong?.id == song.id,
+                      onTap: () =>
+                          audioManager.playQueue(_results, startIndex: index),
+                      onMorePressed: () {},
+                    );
+                  },
+                  childCount: _results.length,
+                ),
               ),
             )
           else ...[
             // Browse by genre
             SliverToBoxAdapter(
-              child: SectionHeader(title: 'Browse by Genre'),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 32 : 16),
+                child: const SectionHeader(title: 'Browse Genres'),
+              ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: isDesktop ? 32 : 16),
               sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: genreColumns,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: 2.5,
+                  childAspectRatio: 2.3,
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -161,7 +218,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ],
 
-          const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
+          const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
         ],
       ),
     );
@@ -175,33 +232,78 @@ class _GenreChip {
   const _GenreChip(this.name, this.icon, this.color);
 }
 
-class _GenreTile extends StatelessWidget {
+class _GenreTile extends StatefulWidget {
   final _GenreChip genre;
   final VoidCallback onTap;
 
   const _GenreTile({required this.genre, required this.onTap});
 
   @override
+  State<_GenreTile> createState() => _GenreTileState();
+}
+
+class _GenreTileState extends State<_GenreTile> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: genre.color.withAlpha(30),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Icon(genre.icon, color: genre.color, size: 24),
-              const SizedBox(width: 12),
-              Text(
-                genre.name,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: genre.color,
-                    ),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: _isHovered
+              ? widget.genre.color.withAlpha(35)
+              : widget.genre.color.withAlpha(18),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: widget.genre.color.withAlpha(_isHovered ? 100 : 45),
+            width: _isHovered ? 1.0 : 0.6,
+          ),
+          boxShadow: [
+            if (_isHovered)
+              BoxShadow(
+                color: widget.genre.color.withAlpha(40),
+                blurRadius: 16,
+                spreadRadius: 1,
               ),
-            ],
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: widget.genre.color.withAlpha(30),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      widget.genre.icon,
+                      color: widget.genre.color,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    widget.genre.name,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

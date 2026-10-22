@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_theme.dart';
+import '../../shared/theme/sonora_colors.dart';
 
 /// Section header with title and optional "See All" action.
 class SectionHeader extends StatelessWidget {
@@ -11,7 +11,7 @@ class SectionHeader extends StatelessWidget {
     super.key,
     required this.title,
     this.onSeeAllPressed,
-    this.seeAllText = 'See All',
+    this.seeAllText = 'See all',
   });
 
   @override
@@ -24,13 +24,25 @@ class SectionHeader extends StatelessWidget {
         children: [
           Text(title, style: theme.textTheme.headlineMedium),
           if (onSeeAllPressed != null)
-            TextButton(
-              onPressed: onSeeAllPressed,
-              child: Text(
-                seeAllText,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.primaryPurple,
-                ),
+            GestureDetector(
+              onTap: onSeeAllPressed,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    seeAllText,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: SonoraColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 18,
+                    color: SonoraColors.textSecondary,
+                  ),
+                ],
               ),
             ),
         ],
@@ -63,8 +75,20 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: AppTheme.darkTextTertiary),
-            const SizedBox(height: 16),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: SonoraColors.surfaceElevated,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: SonoraColors.surfaceBorder.withAlpha(60),
+                  width: 0.5,
+                ),
+              ),
+              child: Icon(icon, size: 36, color: SonoraColors.textTertiary),
+            ),
+            const SizedBox(height: 20),
             Text(
               title,
               style: theme.textTheme.titleLarge,
@@ -74,7 +98,9 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 subtitle!,
-                style: theme.textTheme.bodyMedium,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: SonoraColors.textTertiary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -98,14 +124,27 @@ class LoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final accent = theme.colorScheme.primary;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(color: AppTheme.primaryPurple),
+          SizedBox(
+            width: 36,
+            height: 36,
+            child: CircularProgressIndicator(
+              color: accent,
+              strokeWidth: 3,
+            ),
+          ),
           if (message != null) ...[
             const SizedBox(height: 16),
-            Text(message!, style: theme.textTheme.bodyMedium),
+            Text(
+              message!,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: SonoraColors.textSecondary,
+              ),
+            ),
           ],
         ],
       ),
@@ -133,9 +172,17 @@ class ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded,
-                size: 64, color: Color(0xFFEF4444)),
-            const SizedBox(height: 16),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: SonoraColors.error.withAlpha(15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.error_outline_rounded,
+                  size: 36, color: SonoraColors.error),
+            ),
+            const SizedBox(height: 20),
             Text(
               message,
               style: theme.textTheme.titleMedium,

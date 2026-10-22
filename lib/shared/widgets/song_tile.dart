@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../models/song.dart';
-import '../../app/theme/app_theme.dart';
+import '../../shared/theme/sonora_colors.dart';
 
 /// A single song row used in lists throughout the app.
 ///
 /// Shows artwork, title, artist, duration, and optional trailing actions.
+/// Uses accent color from the theme for the currently-playing indicator.
 class SongTile extends StatelessWidget {
   final Song song;
   final VoidCallback? onTap;
@@ -28,23 +29,30 @@ class SongTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final accent = theme.colorScheme.primary;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      child: Padding(
+      child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: isPlaying
+            ? BoxDecoration(
+                color: accent.withAlpha(10),
+                borderRadius: BorderRadius.circular(12),
+              )
+            : null,
         child: Row(
           children: [
             // Index or artwork
             if (index != null) ...[
               SizedBox(
-                width: 32,
+                width: 28,
                 child: Text(
                   '${index!}',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: isPlaying
-                        ? AppTheme.primaryPurple
-                        : null,
+                    color: isPlaying ? accent : SonoraColors.textTertiary,
+                    fontWeight: isPlaying ? FontWeight.w600 : FontWeight.w400,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -55,19 +63,19 @@ class SongTile extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
+                    color: SonoraColors.surfaceElevated,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: song.artworkUrl.isNotEmpty
                       ? Image.network(
                           song.artworkUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _artworkPlaceholder(theme),
+                          errorBuilder: (_, __, ___) => _artworkPlaceholder(),
                         )
-                      : _artworkPlaceholder(theme),
+                      : _artworkPlaceholder(),
                 ),
               ),
               const SizedBox(width: 12),
@@ -81,7 +89,8 @@ class SongTile extends StatelessWidget {
                   Text(
                     song.title,
                     style: theme.textTheme.titleSmall?.copyWith(
-                      color: isPlaying ? AppTheme.primaryPurple : null,
+                      color: isPlaying ? accent : null,
+                      fontWeight: isPlaying ? FontWeight.w600 : FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -89,25 +98,24 @@ class SongTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     song.artist,
-                    style: theme.textTheme.bodySmall,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: SonoraColors.textTertiary,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            // Duration
-            Text(
-              song.formattedDuration,
-              style: theme.textTheme.bodySmall,
-            ),
             // Trailing widget or more button
-            if (trailing != null) trailing!
+            if (trailing != null)
+              trailing!
             else if (onMorePressed != null)
               IconButton(
-                icon: const Icon(Icons.more_vert, size: 20),
+                icon: const Icon(Icons.more_vert, size: 18),
                 onPressed: onMorePressed,
                 visualDensity: VisualDensity.compact,
+                color: SonoraColors.textTertiary,
               ),
           ],
         ),
@@ -115,10 +123,11 @@ class SongTile extends StatelessWidget {
     );
   }
 
-  Widget _artworkPlaceholder(ThemeData theme) {
+  Widget _artworkPlaceholder() {
     return Container(
-      color: AppTheme.darkElevated,
-      child: const Icon(Icons.music_note_rounded, size: 24, color: AppTheme.darkTextTertiary),
+      color: SonoraColors.surfaceElevated,
+      child: const Icon(Icons.music_note_rounded,
+          size: 22, color: SonoraColors.textTertiary),
     );
   }
 }

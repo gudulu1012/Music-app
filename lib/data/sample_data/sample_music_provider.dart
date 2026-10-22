@@ -281,6 +281,9 @@ class SampleMusicProvider implements MusicProvider {
     ];
   }
 
+  /// Direct synchronous access to all catalog songs.
+  List<Song> get allSongs => List.unmodifiable(_catalog);
+
   @override
   Future<List<Song>> fetchCatalog() async {
     // Simulate network delay

@@ -13,6 +13,7 @@ import 'data/repositories/history_repository.dart';
 import 'data/repositories/user_settings_repository.dart';
 import 'data/firebase/firestore_service.dart';
 import 'data/sample_data/sample_music_provider.dart';
+import 'shared/theme/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +49,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider.value(value: authService),
         ChangeNotifierProvider.value(value: audioManager),
         ChangeNotifierProvider.value(value: downloadManager),

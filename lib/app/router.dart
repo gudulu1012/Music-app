@@ -29,6 +29,7 @@ class AppRouter {
   static const String playlistDetail = '/playlist';
   static const String albumDetail = '/album';
   static const String artistDetail = '/artist';
+  static const String profile = '/profile';
 
   /// Generate a route for the given [RouteSettings].
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
@@ -63,6 +64,8 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => ArtistDetailScreen(artistName: artistName),
         );
+      case settings:
+        return MaterialPageRoute(builder: (_) => const SettingsScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
@@ -89,8 +92,8 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
 
-  // Each tab gets its own GlobalKey so its navigation state persists.
-  final _navigatorKeys = List.generate(4, (_) => GlobalKey<NavigatorState>());
+  // 5 tabs: Home, Search, Library, Playlists, Profile/Settings
+  final _navigatorKeys = List.generate(5, (_) => GlobalKey<NavigatorState>());
 
   void _onTabSelected(int index) {
     if (index == _currentIndex) {
@@ -110,12 +113,19 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
+  /// Navigate to a specific route within the current tab's navigator,
+  /// or via the root navigator for full-screen routes.
+  void _navigateTo(String route, {Object? arguments}) {
+    Navigator.of(context).pushNamed(route, arguments: arguments);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppShellLayout(
       currentIndex: _currentIndex,
       onDestinationSelected: _onTabSelected,
       onMiniPlayerTap: _openNowPlaying,
+      onNavigateTo: _navigateTo,
       body: IndexedStack(
         index: _currentIndex,
         children: [
@@ -131,21 +141,25 @@ class _AppShellState extends State<AppShell> {
             navigatorKey: _navigatorKeys[2],
             builder: (_) => LibraryScreen(
               onNavigateToFavorites: () {
-                Navigator.of(context).pushNamed(AppRouter.favorites);
+                _navigateTo(AppRouter.favorites);
               },
               onNavigateToRecentlyPlayed: () {
-                Navigator.of(context).pushNamed(AppRouter.recentlyPlayed);
+                _navigateTo(AppRouter.recentlyPlayed);
               },
               onNavigateToDownloads: () {
-                Navigator.of(context).pushNamed(AppRouter.downloads);
+                _navigateTo(AppRouter.downloads);
               },
               onNavigateToPlaylists: () {
-                Navigator.of(context).pushNamed(AppRouter.playlists);
+                _navigateTo(AppRouter.playlists);
               },
             ),
           ),
           _TabNavigator(
             navigatorKey: _navigatorKeys[3],
+            builder: (_) => const PlaylistsScreen(),
+          ),
+          _TabNavigator(
+            navigatorKey: _navigatorKeys[4],
             builder: (_) => const SettingsScreen(),
           ),
         ],

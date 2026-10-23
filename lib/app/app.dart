@@ -4,6 +4,7 @@ import 'theme/app_theme.dart';
 import 'router.dart';
 import '../services/auth/auth_service.dart';
 import '../features/auth/auth_gate.dart';
+import '../shared/theme/theme_provider.dart';
 
 /// Root widget for the Music App.
 ///
@@ -16,13 +17,21 @@ class MusicApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return MaterialApp(
       title: 'Sonora',
       debugShowCheckedModeBanner: false,
 
-      // Theme
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      // Dynamic theme from ThemeProvider
+      theme: AppTheme.buildDarkTheme(
+        themeProvider.accentColor,
+        themeType: themeProvider.currentTheme,
+      ),
+      darkTheme: AppTheme.buildDarkTheme(
+        themeProvider.accentColor,
+        themeType: themeProvider.currentTheme,
+      ),
       themeMode: ThemeMode.dark, // Default to dark
 
       // Auth-aware home
@@ -39,15 +48,16 @@ class _AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthService>();
+    final accent = Theme.of(context).colorScheme.primary;
 
     switch (auth.state) {
       case AuthState.initial:
       case AuthState.loading:
         // Show a splash / loading screen while checking auth state
-        return const Scaffold(
+        return Scaffold(
           body: Center(
             child: CircularProgressIndicator(
-              color: AppTheme.primaryPurple,
+              color: accent,
             ),
           ),
         );
